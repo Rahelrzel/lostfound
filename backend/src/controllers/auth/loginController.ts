@@ -23,13 +23,6 @@ export const loginController = dbQuery(async (req: Request, res: Response) => {
     expiresIn: env.JWT_EXPIRES_IN,
   } as jwt.SignOptions);
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-
   res.status(200).json({
     success: true,
     message: "Login successful",

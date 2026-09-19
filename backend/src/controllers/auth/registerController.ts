@@ -20,13 +20,6 @@ export const registerController = dbQuery(
       expiresIn: env.JWT_EXPIRES_IN,
     } as jwt.SignOptions);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
     res.status(201).json({
       success: true,
       message: "Registration successful",
