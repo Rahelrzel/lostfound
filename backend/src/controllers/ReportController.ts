@@ -212,6 +212,7 @@ export const GetReportById = async (
   try {
     const { id } = req.params;
 
+    // Get the requested report
     const report = await Report.findById(id);
 
     if (!report) {
@@ -222,9 +223,28 @@ export const GetReportById = async (
       return;
     }
 
+    // Find the opposite report type
+    const matchingType = report.type === "lost" ? "found" : "lost";
+
+    // Find matching reports
+    const matchingReports = await Report.find({
+      _id: { $ne: report._id },
+      type: matchingType,
+      category: report.category,
+      location: {
+        $regex: report.location,
+        $options: "i",
+      },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
     res.status(200).json({
       success: true,
-      data: report,
+      data: {
+        report,
+        matchingReports,
+      },
     });
   } catch (error) {
     console.error("GetReportById Error:", error);
