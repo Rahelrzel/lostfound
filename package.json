@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "redux": "^5.0.1",
-    "toolkit": "^1.5.4"
-  }
-}

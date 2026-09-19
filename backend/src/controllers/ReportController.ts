@@ -210,21 +210,19 @@ export const GetReports = async (
     }
 };
 // GET report by ID
+// GET report by ID
 export const GetReportById = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-  try {
-    const { id } = req.params;
-
-    // Get the requested report
-    const report = await Report.findById(id);
     try {
         const { id } = req.params;
 
-        const report = await Report.findById({ _id: id })
+        // Get the requested report
+        const report = await Report.findById(id)
             .populate("createdBy", "name email");
 
+        // Check if report exists
         if (!report) {
             res.status(404).json({
                 success: false,
@@ -233,9 +231,29 @@ export const GetReportById = async (
             return;
         }
 
+        // Find the opposite report type
+        const matchingType =
+            report.type === "lost" ? "found" : "lost";
+
+        // Find matching reports
+        const matchingReports = await Report.find({
+            _id: { $ne: report._id },
+            type: matchingType,
+            category: report.category,
+            location: {
+                $regex: report.location,
+                $options: "i",
+            },
+        })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
         res.status(200).json({
             success: true,
-            data: report,
+            data: {
+                report,
+                matchingReports,
+            },
         });
     } catch (error) {
         console.error("GetReportById Error:", error);
@@ -245,38 +263,6 @@ export const GetReportById = async (
             message: "Failed to fetch report",
         });
     }
-
-    // Find the opposite report type
-    const matchingType = report.type === "lost" ? "found" : "lost";
-
-    // Find matching reports
-    const matchingReports = await Report.find({
-      _id: { $ne: report._id },
-      type: matchingType,
-      category: report.category,
-      location: {
-        $regex: report.location,
-        $options: "i",
-      },
-    })
-      .sort({ createdAt: -1 })
-      .limit(5);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        report,
-        matchingReports,
-      },
-    });
-  } catch (error) {
-    console.error("GetReportById Error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch report",
-    });
-  }
 };
 
 
