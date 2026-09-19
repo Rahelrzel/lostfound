@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '../app/store';
 import api from '../services/api';
 import { Report } from '../types';
 import ReportForm, { ReportFormData } from '../components/ReportForm';
@@ -23,7 +23,7 @@ export default function EditReport() {
 
     api
       .get(`/api/reports/${id}`)
-      .then((res) => {
+      .then((res:any) => {
         if (active) setReport(res.data);
       })
       .catch(() => {

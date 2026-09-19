@@ -1,44 +1,28 @@
-import { useSelector, useDispatch } from "react-redux";
-import {
-  increment,
-  decrement,
-  setMessage,
-  reset,
-} from "./features/generic/genericSlice";
-import type { RootState, AppDispatch } from "./app/store";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Reports from './pages/Reports';
+import ReportDetails from './pages/ReportDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import CreateReport from './pages/CreateReport';
+import EditReport from './pages/EditReport';
+import MyReports from './pages/MyReports';
 
-function App() {
-  const count = useSelector((state: RootState) => state.generic.count);
-  const message = useSelector((state: RootState) => state.generic.message);
-  const dispatch: AppDispatch = useDispatch();
-
+export default function App() {
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Redux Starter</h1>
-      <p>{message}</p>
-      <p>Count: {count}</p>
-
-      <button onClick={() => dispatch(increment())}>Increment</button>
-      <button
-        onClick={() => dispatch(decrement())}
-        style={{ marginLeft: "0.5rem" }}
-      >
-        Decrement
-      </button>
-      <button
-        onClick={() => dispatch(setMessage("Redux Toolkit is active"))}
-        style={{ marginLeft: "0.5rem" }}
-      >
-        Set message
-      </button>
-      <button
-        onClick={() => dispatch(reset())}
-        style={{ marginLeft: "0.5rem" }}
-      >
-        Reset
-      </button>
-    </div>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/reports/:id" element={<ReportDetails />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/create" element={<CreateReport />} />
+        <Route path="/reports/:id/edit" element={<EditReport />} />
+        <Route path="/my-reports" element={<MyReports />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

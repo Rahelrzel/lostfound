@@ -1,91 +1,68 @@
-import { useEffect, useState, FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
-import { loginUser, clearAuthError } from '../features/auth/authSlice';
-
-const inputClass =
-  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900';
-const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5';
+import { AppDispatch, RootState } from '../app/store';
+import { loginUser } from '../features/auth/authSlice';
 
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, error, isAuthenticated } = useSelector((s: RootState) => s.auth);
 
+  const { loading, error } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const from = (location.state as { from?: string })?.from ?? '/';
 
-  useEffect(() => {
-    dispatch(clearAuthError());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (isAuthenticated) navigate(from, { replace: true });
-  }, [isAuthenticated, from, navigate]);
-
-  async function handleSubmit(e: FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(loginUser({ email, password }));
-  }
+    const result = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(result)) {
+      navigate(from, { replace: true });
+    }
+  };
 
   return (
-    <div className="mx-auto w-full max-w-sm px-4 py-16">
-      <h1 className="text-2xl font-semibold text-slate-900">Sign in</h1>
-      <p className="mt-1 text-sm text-slate-600">Post reports and keep track of the ones you filed.</p>
+    <div className="max-w-sm mx-auto px-6 py-16">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Log in</h1>
 
-      {error && (
-        <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={labelClass} htmlFor="email">
-            Email
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
-            id="email"
-            type="email"
             required
-            className={inputClass}
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className={labelClass} htmlFor="password">
-            Password
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
           <input
-            id="password"
-            type="password"
             required
-            className={inputClass}
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
           />
         </div>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          className="w-full bg-green-700 text-white py-2 rounded-md text-sm font-medium hover:bg-green-800 disabled:opacity-60"
         >
-          {loading ? 'Signing in…' : 'Sign in'}
+          {loading ? 'Logging in...' : 'Log in'}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-slate-600">
-        No account yet?{' '}
-        <Link to="/register" className="font-medium text-slate-900 underline underline-offset-2">
-          Create one
-        </Link>
+      <p className="text-sm text-gray-500 mt-4 text-center">
+        No account? <Link to="/register" className="text-green-700 underline">Register</Link>
       </p>
     </div>
   );

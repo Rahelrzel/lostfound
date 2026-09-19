@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import {  Link, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '../app/store';
 import api from '../services/api';
 import { Report } from '../types';
 import ConfirmModal from '../components/ConfirmModal';
@@ -44,7 +44,7 @@ export default function MyReports() {
 
     api
       .get('/api/reports/me')
-      .then((res) => {
+      .then((res:any) => {
         if (active) setReports(res.data);
       })
       .catch(() => {
