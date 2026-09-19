@@ -102,6 +102,7 @@ export const CreateReport = async (
 
 
 // GET all reports with search, filters, and sorting
+// GET all reports with search, filters, and sorting
 export const GetReports = async (
   req: Request,
   res: Response
@@ -115,10 +116,9 @@ export const GetReports = async (
       sort = "desc",
     } = req.query;
 
-    // Build filter object
     const filter: Record<string, any> = {};
 
-    // Search by title or description
+    // Search title or description
     if (search && typeof search === "string") {
       filter.$or = [
         {
@@ -136,7 +136,7 @@ export const GetReports = async (
       ];
     }
 
-    // Filter by category
+    // Category
     if (category && typeof category === "string") {
       filter.category = {
         $regex: category,
@@ -144,9 +144,11 @@ export const GetReports = async (
       };
     }
 
-    // Filter by Lost / Found
+    // Lost / Found
     if (type && typeof type === "string") {
-      if (!["lost", "found"].includes(type.toLowerCase())) {
+      const reportType = type.toLowerCase();
+
+      if (!["lost", "found"].includes(reportType)) {
         res.status(400).json({
           success: false,
           message: "Type must be either 'lost' or 'found'",
@@ -154,10 +156,10 @@ export const GetReports = async (
         return;
       }
 
-      filter.type = type.toLowerCase();
+      filter.type = reportType;
     }
 
-    // Filter by location
+    // Location
     if (location && typeof location === "string") {
       filter.location = {
         $regex: location,
@@ -165,7 +167,7 @@ export const GetReports = async (
       };
     }
 
-    // Validate sort option
+    // Sort
     if (sort !== "asc" && sort !== "desc") {
       res.status(400).json({
         success: false,
@@ -174,11 +176,10 @@ export const GetReports = async (
       return;
     }
 
-    // Sort by created date
     const sortOrder = sort === "asc" ? 1 : -1;
 
     const reports = await Report.find(filter)
-      .populate("createdBy", "name email")
+    //   .populate("createdBy", "name email")
       .sort({ createdAt: sortOrder });
 
     res.status(200).json({
@@ -199,10 +200,10 @@ export const GetReports = async (
     res.status(500).json({
       success: false,
       message: "Failed to fetch reports",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
-
 // GET report by ID
 export const GetReportById = async (
   req: Request,
@@ -210,8 +211,8 @@ export const GetReportById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const report = await Report.findById(id)
-      .populate("createdBy", "name email");
+
+    const report = await Report.findById(id);
 
     if (!report) {
       res.status(404).json({
@@ -231,6 +232,87 @@ export const GetReportById = async (
     res.status(500).json({
       success: false,
       message: "Failed to fetch report",
+    });
+  }
+};
+
+
+// Update report by ID
+export const UpdateReport = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const updatedReport = await Report.findByIdAndUpdate(
+      {_id: id},
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedReport) {
+      res.status(404).json({
+        success: false,
+        message: "Report not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Report updated successfully",
+      data: updatedReport,
+    });
+  } catch (error) {
+    console.error("UpdateReport Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update report",
+    });
+  }
+};
+
+
+// Delete report by ID
+export const DeleteReport = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const deletedReport = await Report.findByIdAndDelete({_id: id});
+
+    if (!deletedReport) {
+      res.status(404).json({
+        success: false,
+        message: "Report not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Report deleted successfully",
+      data: deletedReport,
+    });
+  } catch (error) {
+    console.error("DeleteReport Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to delete report",
     });
   }
 };
