@@ -99,3 +99,61 @@ export const CreateReport = async (
     });
   }
 };
+
+// GET all reports
+export const GetReports = async (
+//   req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const reports = await Report.find()
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: reports.length,
+      data: reports,
+    });
+  } catch (error) {
+    console.error("GetReports Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch reports",
+    });
+  }
+};
+
+// GET report by ID
+export const GetReportById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const report = await Report.findById(id)
+      .populate("createdBy", "name email");
+
+    if (!report) {
+      res.status(404).json({
+        success: false,
+        message: "Report not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    console.error("GetReportById Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch report",
+    });
+  }
+};
