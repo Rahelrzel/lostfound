@@ -1,23 +1,12 @@
-import express, { Express, Request, Response } from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-dotenv.config();
+import app from "./app";
+import { connectDB } from "./configs/db.config";
+import { env } from "./configs/env.config";
 
-const app: Express = express();
-const PORT = process.env.PORT || 5000;
+const startServer = async () => {
+  await connectDB();
+  app.listen(env.PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${env.PORT}`);
+  });
+};
 
-// Connect to MongoDB
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Health check route
-app.get("/", (_req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "MERN backend is running" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();
