@@ -100,19 +100,97 @@ export const CreateReport = async (
   }
 };
 
-// GET all reports
+
+// GET all reports with search, filters, and sorting
 export const GetReports = async (
-//   req: Request,
+  req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const reports = await Report.find()
+    const {
+      search,
+      category,
+      type,
+      location,
+      sort = "desc",
+    } = req.query;
+
+    // Build filter object
+    const filter: Record<string, any> = {};
+
+    // Search by title or description
+    if (search && typeof search === "string") {
+      filter.$or = [
+        {
+          title: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    // Filter by category
+    if (category && typeof category === "string") {
+      filter.category = {
+        $regex: category,
+        $options: "i",
+      };
+    }
+
+    // Filter by Lost / Found
+    if (type && typeof type === "string") {
+      if (!["lost", "found"].includes(type.toLowerCase())) {
+        res.status(400).json({
+          success: false,
+          message: "Type must be either 'lost' or 'found'",
+        });
+        return;
+      }
+
+      filter.type = type.toLowerCase();
+    }
+
+    // Filter by location
+    if (location && typeof location === "string") {
+      filter.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    // Validate sort option
+    if (sort !== "asc" && sort !== "desc") {
+      res.status(400).json({
+        success: false,
+        message: "Sort must be either 'asc' or 'desc'",
+      });
+      return;
+    }
+
+    // Sort by created date
+    const sortOrder = sort === "asc" ? 1 : -1;
+
+    const reports = await Report.find(filter)
       .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: sortOrder });
 
     res.status(200).json({
       success: true,
       count: reports.length,
+      filters: {
+        search: search || null,
+        category: category || null,
+        type: type || null,
+        location: location || null,
+        sort,
+      },
       data: reports,
     });
   } catch (error) {
@@ -132,7 +210,6 @@ export const GetReportById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-
     const report = await Report.findById(id)
       .populate("createdBy", "name email");
 
