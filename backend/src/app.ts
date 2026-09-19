@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
-const { reportsRoute } = require("./routes/reportsRoute");
+import reportRoutes from "./routes/reportsRoute";
+
+
 
 const app = express();
 
@@ -14,6 +16,6 @@ app.get("/", (_req, res) => {
 });
 
 // Feature routes
-app.use("/api/reports", reportsRoute)
+app.use("/api/reports", reportRoutes);
 
 export default app;
